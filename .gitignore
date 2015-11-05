@@ -3,3 +3,5 @@
 *.log
 *.egg-info
 .tox
+build/
+*.so
