@@ -287,6 +287,19 @@ class SimpleSignalTestCase (NotifyTestCase):
 
         self.assertEqual (signal.emit (), [(False, True)])
 
+    def test_allows_configure_exception_handler(self):
+        class CustomSignal(Signal):
+
+            def get_exception_handler(self):
+                return AbstractSignal.reraising_exception_handler
+
+        def handler():
+            raise NotImplementedError
+
+        signal = CustomSignal()
+        signal.connect(handler)
+
+        self.assertRaises(NotImplementedError, signal.__call__)
 
 
 class RecursiveEmissionSignalTestCase (NotifyTestCase):
@@ -594,6 +607,20 @@ class AccumulatorSignalTestCase (NotifyTestCase):
         # This handler should never be invoked.
         signal.connect (lambda: 50)
         self.assertEqual (signal.emit (), -75)
+
+    def test_allows_configure_exception_handler(self):
+        class CustomSignal(Signal):
+
+            def get_exception_handler(self):
+                return AbstractSignal.reraising_exception_handler
+
+        def handler():
+            raise NotImplementedError
+
+        signal = CustomSignal(AbstractSignal.ANY_ACCEPTS)
+        signal.connect(handler)
+
+        self.assertRaises(NotImplementedError, signal.__call__)
 
 
 

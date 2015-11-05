@@ -1169,12 +1169,14 @@ class Signal (AbstractSignal):
                         try:
                             handler (*arguments, **keywords)
                         except:
-                            AbstractSignal.exception_handler (self, sys.exc_info () [1], handler)
+                            exception_handler = self.get_exception_handler()
+                            exception_handler(self, sys.exc_info () [1], handler)
                     else:
                         try:
                             handler_value = handler (*arguments, **keywords)
                         except:
-                            AbstractSignal.exception_handler (self, sys.exc_info () [1], handler)
+                            exception_handler = self.get_exception_handler()
+                            exception_handler(self, sys.exc_info () [1], handler)
                         else:
                             value = accumulator.accumulate_value (value, handler_value)
                             if not accumulator.should_continue (value):
@@ -1190,6 +1192,8 @@ class Signal (AbstractSignal):
         else:
             return accumulator.post_process_value (value)
 
+    def get_exception_handler(self):
+        return AbstractSignal.exception_handler
 
     def _get_emission_level (self):
         return abs (self.__emission_level)
