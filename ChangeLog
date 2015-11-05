@@ -1,0 +1,1714 @@
+2008-09-28  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	--- Released 0.3.1 ---
+
+	* NEWS: Update.
+
+	* INSTALL: Update.
+
+	* TODO: Update.
+
+2008-09-27  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* test/bind.py (Dummy.keyword_dict_function)
+	(Dummy.static_keyword_dict): New helper methods.
+	(BindingTestCase.test_invocation_keywords)
+	(BindingTestCase.test_creation_with_keywords)
+	(BindingTestCase.test_equality_5)
+	(BindingWrapTestCase.test_wrap_with_keywords_1): New tests.
+
+	* test/__common.py (NotifyTestObject.simple_keywords_handler): New
+	helper method.
+
+	* test/signal.py (SimpleSignalTestCase.test_connect_with_keywords)
+	(SimpleSignalTestCase.test_mixed_argument_passing): New tests.
+
+2008-09-23  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* version: Adopt new policy: bump version after release, so that
+	installing SVN development doesn't overwrite last released version
+	install.  So, bumped to 0.3.1 now.  Insert release marks into the
+	ChangeLog.
+
+	* NEWS: Merge in news about 0.2.1 from 0.2 branch.  Add release
+	dates to all news.
+
+2008-09-21  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/gc.c (MODULE_DOC): Update:
+	`AbstractGCProtector.set_default' was deprecated a while ago.
+
+	* notify/base.py:
+	* notify/bind.py:
+	* notify/mediator.py: Documentation formatting and grammar fixes.
+
+2008-09-02  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/gc.c (Compatibility_TPFLAGS_HAVE_VERSION_TAG): New macro.
+	Equal to `Py_TPFLAGS_HAVE_VERSION_TAG' if that is defined.
+	(GCProtectorMeta_Type, AbstractGCProtector_Type)
+	(FastGCProtector_Type, RaisingGCProtector_Type)
+	(DebugGCProtector_Type): Use it.
+
+2008-08-30  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/gc.c (Compatibility_String_AsString): Remove macro.
+	(GCProtectorMeta_set_default): Rewrite exception message
+	formatting: strings are too difficult from C level in Py3k.
+	(gc_module_initialize_state): Add reference to
+	`raise_not_implemented_exception'.
+	(Compatibility_MODINIT_FUNC_NAME (gc)): Zero module
+	state (workaround apparent bug in Py3k).
+
+2008-08-10  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/base.py (AbstractValueObject.store)
+	(AbstractValueObject.store_safe)
+	(AbstractValueObject.with_changes_frozen): Add keyword support.
+
+	* notify/mediator.py (FunctionalMediator.__init__)
+	(FunctionalMediator.forward_value)
+	(FunctionalMediator.back_value, FunctionalMediator.reverse)
+	(FunctionalMediator.__eq__, FunctionalMediator.__hash__): Add
+	keyword support.
+	(_identity): Ignore keyword arguments too.
+
+	* notify/signal.py (AbstractSignal.is_connected)
+	(AbstractSignal.is_blocked, AbstractSignal.connect)
+	(AbstractSignal.connect_safe, AbstractSignal._wrap_handler)
+	(AbstractSignal.disconnect, AbstractSignal.disconnect_all)
+	(AbstractSignal.block, AbstractSignal.unblock)
+	(AbstractSignal.emit, AbstractSignal.__call__)
+	(Signal.is_connected, Signal.is_blocked, Signal.disconnect)
+	(Signal.disconnect_all, Signal.block, Signal.unblock, Signal.emit)
+	(CleanSignal.disconnect, CleanSignal.disconnect_all)
+	(CleanSignal._wrap_handler): Add keyword support.
+
+	* notify/_2_5/base.py (storing, storing_safely): Add keyword
+	support.
+
+	* notify/_2_5/signal.py (connecting, connecting_safely)
+	(blocking): Add keyword support.
+
+2008-08-08  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/bind.py (Binding.__init__, Binding.wrap)
+	(Binding.__call__, Binding.__eq__, Binding.__hash__)
+	(Binding.__to_string, WeakBinding.__init__, WeakBinding)
+	(WeakBinding.__call__): Add keyword support.
+	(Binding._get_keywords): New method.
+	(Binding.im_kwds): New property.
+
+	* notify/utils.py (frozendict): New class.
+
+2008-08-06  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/gc.c (GCProtectorMeta_set_default): Don't decref
+	`default_protector' when `state' is inconsistent (similar to
+	Py_CLEAR).
+
+2008-08-05  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/gc.c (Compatibility_VISIT, Compatibility_ModuleState)
+	(Compatibility_ModuleStateFromDef)
+	(Compatibility_2_x_MODULE_STATE): New macros.
+	(GCModuleState): New structure.
+	(GC_MODULE_STATE, GC_MODULE_STATE_FROM_DEF): New macros.
+	(raise_not_implemented_exception, unprotection_error_type)
+	(default_protector, default_attribute_name): Combine into a
+	structure; static on 2.x, dynamically bound to module object on
+	3000.
+	(GCProtectorMeta_setattro, GCProtectorMeta_get_default)
+	(GCProtectorMeta_set_default, AbstractGCProtector_protect)
+	(AbstractGCProtector_unprotect, RaisingGCProtector_unprotect): Use
+	corresponding structure fields.
+	(gc_module_initialize_state): New function, broken out of
+	`Compatibility_MODINIT_FUNC_NAME (gc)' function.
+	(gc_module_traverse, gc_module_clear): New functions.
+
+2008-08-03  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/gc.c (Compatibility_ModuleDef)
+	(Compatibility_ModuleDef_HEAD_INIT)
+	(Compatibility_MODINIT_FUNC_NAME, Compatibility_ModuleCreate)
+	(Compatibility_ModulePostCreate, Compatibility_ModuleReturn): New
+	macros (Compatibility_ModuleDef is a typedef for 2.x).
+	(gc_module): New constant structure.
+	(initgc): Use `Compatibility_MODINIT_FUNC_NAME' to construct name.
+	Use other new compatibility macros.
+	(GCProtectorMeta_properties, GCProtectorMeta_Type)
+	(AbstractGCProtector_methods, AbstractGCProtector_Type)
+	(FastGCProtector_methods, FastGCProtector_properties)
+	(FastGCProtector_Type, RaisingGCProtector_methods)
+	(RaisingGCProtector_properties, RaisingGCProtector_Type)
+	(DebugGCProtector_methods, DebugGCProtector_Type): Make static.
+
+2008-05-06  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	--- Released 0.2.0 ---
+
+	* version: Release 0.2.0.
+
+	* NEWS: Update.
+
+2008-04-25  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* run-tests.py (_TestModuleImporter.__getattribute__): First try
+	if super method works (otherwise Py3k's unittest fails, it tries
+	to get `__call__' attribute).
+
+2008-03-10  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* run-tests.py (TestProgram.runTests): Emphasize heavy
+	gc.collect() usage.
+
+	* test/__common.py (NotifyTestCase.setUp): Remember number of
+	garbage-collectable objects before test.
+	(NotifyTestCase.tearDown): Check that the number doesn't change.
+	(NotifyTestCase.collect_garbage): Remove the only
+	argument (unused).  Return number of garbage-collectable objects.
+
+2008-03-03  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	--- Released 0.1.15 ---
+
+	* version: Release 0.1.15.
+
+	* NEWS: Update.
+
+	* test/_gc.py (AbstractGCProtectorTestCase.test_default_property):
+	Don't use deprecated set_default().
+	(AbstractGCProtectorTestCase.test_default_property_illegals): New
+	test.
+
+	* test/condition.py (GarbageCollectionConditionTestCase): Remove
+	explicit number of GC runs in several tests, rely on automatic
+	algorithm added in collect_garbage().
+
+	* test/__common.py (NotifyTestCase.tearDown): New method, collect
+	garbage after each test and check that number of active GC
+	protections doesn't change compared to before the test.
+	(NotifyTestCase.collect_garbage): Add a way to 'collect while
+	collects' to avoid specifying hardwired number of runs.
+	(NotifyTestCase.__count_garbage_collectable_objects): New
+	function.
+
+	* notify/signal.py (CleanSignal.orphan): Fix order of setting
+	`__parent' to None and call to unprotect().
+	(CleanSignal.collect_garbage): Fix: don't call unprotect() if we
+	are orphaned already.
+
+2008-03-02  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* test/__common.py (NotifyTestObject): New class, break out of
+	`NotifyTestCase'.
+
+	* test/base.py:
+	* test/condition.py:
+	* test/signal.py:
+	* test/variable.py:
+	* test/_2_5/base.py:
+	* test/_2_5/signal.py: Update tests so they don't leak
+	signals/conditions/variables using new machinery in `__common.py'.
+
+	* notify/gc.c: Enhance documentation a bit.
+	(Compatibility_String_AsString): New macro.
+	(GCProtectorMeta_set_default): Refuse to set a different protector
+	if it is not an instance of `AbstractGCProtector', or the current
+	one has non-zero `num_active_protections' property.
+
+2008-03-01  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/gc.c: Many changes because of
+	http://bugs.python.org/issue1878.  In short, introduce a meta-type
+	for GC protectors that handles `default' property of
+	types (i.e. not of objects).
+
+	* run-tests.py: Tweak so that it is possible to do sth. like
+	`./run-tests.py condition.LogicConditionTestCase'.
+
+2008-01-20  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* docs/tutorial.txt: Add document information.  Add copyright
+	notice and a simple license taken from
+	http://pygtk.org/pygtk2tutorial/ch-Copyright.html.  Make all
+	examples directly copyable to Python interpreter.  Some stylistic
+	changes and a few little expansions.
+
+	* docs/reST.css: Add custom rules for `docinfo' class.
+
+2008-01-19  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* (Globally): Update copyright notices.
+
+	* NEWS: Add P.S. to 0.1.13 entry about fixed Py3k.
+
+2008-01-06  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* INSTALL: Remove notice about failing test: Py3k is fixed.
+
+2007-12-28  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	--- Released 0.1.14 ---
+
+	* version: Release 0.1.14.
+
+	* NEWS: Update.
+
+	* run-tests.py (_build_extensions): New function, break out of
+	TestProgram.runTests().
+	(_import_module_tests): Call it from here too.
+	* benchmark.py: Similar changes.
+
+2007-12-26  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* run-tests.py: Rewrite to lazy-load only necessary modules and
+	build extension only if we actually get to testing anything.
+	* benchmark.py: Likewise.
+
+	* benchmark/benchmarking.py (load_benchmarks): Call any function
+	first.
+
+2007-12-22  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* TODO: One more item, some comments.
+
+	* benchmark/benchmarking.py: Remove never used `TypeType'.
+
+	* docs/tutorial.txt: A few grammar, style and factual fixes.
+
+	* INSTALL (System Requirements): Note about Python 3000.
+	(Installing With EasyInstall): New section.
+
+2007-12-21  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* generate-reference.py: Also exclude internal `notify._2_x'.
+
+	* notify/gc.c: Add documentation to several symbols.
+	(unprotection_error_type): Rename from
+	`unprotection_exception_type'.
+	(RaisingGCProtector_protect, RaisingGCProtector_unprotect): Change
+	types from `int' to `long int' where appropriate.
+	(initgc): Actually add UNPROTECTION_ERROR_DOC to the type.
+
+	* notify/gc.c (PyInt_AsLong, PyInt_FromLong): Define for Py3k
+	using their PyLong_*() analogues.
+	(AbstractGCProtector_Type): Remove explicit base, as it is
+	supplied by Python anyway and can break builds (#10560).
+
+2007-12-09  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/bind.py (Binding.__init__, Binding.__eq__)
+	(WeakBinding.wrap): Py3k only: account for renamed `im_*'
+	properties.
+	(Binding): Py3k only: rename own `im_*' properties as done in the
+	language.
+
+	* test/bind.py (BindingTestCase.test_equality_2): Effectively
+	disable on Py3k: unbound methods are gone, so this code cannot
+	work anymore.
+	(BindingWrapTestCase.test_wrap_6): Account for renamed properties.
+
+	* notify/utils.py (DummyReference): Declare `ClassTypes' for the
+	same reason as `StringTypes'.
+	* notify/variable.py
+	(AbstractValueTrackingVariable._generate_derived_type_dictionary):
+	Use it.
+	* benchmark/benchmarking.py (load_benchmarks): Use it.
+	* test/all.py (AllTestCase.assert_is_class): Use it.
+
+	* notify/base.py (AbstractValueObject._is_mutable): Use a
+	different implementation on Py3k to workaround changes.
+	(AbstractValueObject.desynchronize)
+	(AbstractValueObject.desynchronize_fully): Don't use `NoneType'
+	removed in Py3k.
+
+2007-11-17  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	--- Released 0.1.13 ---
+
+	* version: Release 0.1.13.
+
+	* NEWS: Update.
+
+2007-11-08  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/bind.py (WeakBinding.__hash__): Typo fix.
+
+	* benchmark/configobj.py: Many changes to compile and work under
+	SVN Python 3000:
+	- define `StringTypes' to just (str,) under Py3k;
+	- don't use unhashable bytes as dictionary keys;
+	- ditch compatibility with 2.2;
+	- update old-style `raise Type, message' statements;
+	- don't use construct `except Type, var' removed in Py3k.
+
+	* benchmark/benchmarking.py:
+	* benchmark/emission.py:
+	* benchmark/logical.py: Changes to compile and work under SVN
+	Python 3000:
+	- don't use relative imports;
+	- define xrange() as range() under Py3k.
+
+2007-11-07  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* benchmark.py:
+	* benchmark/benchmarking.py:
+	* examples/conditions_pygtk.py:
+	* generate-reference.py:
+	* notify/base.py:
+	* notify/bind.py:
+	* notify/condition.py:
+	* notify/signal.py:
+	* notify/utils.py:
+	* notify/variable.py:
+	* run-tests.py:
+	* setup.py:
+	* test/variable.py: Many changes to compile and work under SVN
+	Python 3000:
+	- define `StringType' as `basestring' or `str';
+	- use print() as a function, not as an operator;
+	- don't use construct `except Type, var' removed in Py3k;
+	- define new function execute() to cope with `exec' changes;
+	- use dict.items() instead of dict.iteritems();
+	- rename __nonzero__() to __bool__() under Py3k.
+
+	* notify/_2_x.py: New module, define execute() for Python 2.x.
+
+	* notify/gc.c: Changes to compile and work under SVN Python 3000:
+	- cope with `ob_type' only present in `PyObject' structure.
+	(Compatibility_VarObject_HEAD_INIT, Compatibility_TypeType)
+	(Compatibility_Fix_TypeType, Compatibility_MODINIT_FUNC): New
+	macros.
+	(Compatibility_CLEAR): Rename from `Py_CLEAR'.
+
+2007-11-06  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/variable.py
+	(AbstractValueTrackingVariable._generate_derived_type_dictionary):
+	Fix typo with mispaced paren.
+
+	* test/variable.py (VariableDerivationTestCase.test_derivation_11)
+	(VariableDerivationTestCase.test_derivation_12): New tests.
+
+	* test/utils.py (UtilsTestCase.test_is_valid_identifier): Test
+	some keywords too.
+
+	* notify/utils.py (is_valid_identifier): Also test `identifier'
+	with `keyword.iskeyword'.
+
+2007-10-12  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/base.py:
+	* notify/bind.py:
+	* notify/condition.py:
+	* notify/mediator.py:
+	* notify/signal.py:
+	* notify/utils.py:
+	* notify/variable.py: Don't use `as_string'.  Apparently it is
+	almost never needed, doh X-(
+
+2007-08-25  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	--- Released 0.1.12 ---
+
+	* version: Release 0.1.12.
+
+	* NEWS: Update.
+
+2007-08-19  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* test/base.py (BaseDerivationTestCase.test_derivation_module):
+	New test.
+
+	* notify/base.py (AbstractValueObject.derive_type): Use metaclass
+	to create new type, do not hardcode to `type'.  Get caller's
+	module name from call stack and set `__module__' attribute on new
+	type to it, if possible.
+
+2007-08-11  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* test/base.py (BaseInternalsTestCase): New test case.
+
+2007-08-10  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* docs/tutorial.txt: Miscellaneous grammar, style and content
+	fixes.
+
+	* notify/base.py (AbstractValueObject._value_changed): Simplify.
+
+2007-08-07  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/condition.py (_Binary.__init__): Connect to terms after
+	evaluating `_term_state', since creating bindings can, in
+	principle, invoke arbitrary code.
+
+	* notify/base.py (AbstractValueObject): Rename and change meaning
+	of `__freeze_flag' slot to `__flags'.  Adjust many methods.  Also
+	incorporate whether `__signal' is set and whether it is an
+	`AbstractSignal' or a reference to it to `__flags' (speed
+	optimization.)
+	* notify/_2_5/base.py (changes_frozen): Adjust accordingly.
+
+	* test/condition.py (BaseConditionTestCase.test_set): New test.
+
+	* notify/gc.c (Py_CLEAR): Define unless already defined (in newer
+	Python versions.)
+	(RaisingGCProtector_init): Use it.
+	(RaisingGCProtector_dealloc): Likewise.
+
+2007-08-05  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* test/_gc.py (_GCProtectorTestCase._do_test_protection): Test
+	various statistics, especially on RaisingGCProtector instances.
+	(_GCProtectorTestCase._do_test_double_protection): Likewise.
+	(RaisingGCProtectorTestCase.test_protection_3): New test.
+
+	* notify/gc.c (AbstractGCProtector_set_default): Throw exceptions
+	where appropriate (e.g. if out of memory.)
+	(RaisingGCProtector_init): Likewise.
+	(RaisingGCProtector_protect): Likewise.
+	(RaisingGCProtector_unprotect): Likewise.
+	(RaisingGCProtector_get_num_object_protections): Likewise.
+	(initgc): Likewise.
+
+2007-08-02  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/signal.py (Signal.emit): Fix to never reset
+	`might_have_garbage' once it is true.
+
+2007-07-31  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* test/variable.py (BaseVariableTestCase.test_predicate_1): Rename
+	from `test_predicate'.
+	(BaseVariableTestCase.test_predicate_2)
+	(BaseVariableTestCase.test_transformation_1)
+	(BaseVariableTestCase.test_transformation_2): New tests.
+
+	* notify/variable.py (AbstractVariable.transform): New method.
+	(_VariableTransformation): New internal class.
+
+2007-07-30  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/base.py
+	(AbstractValueObject._generate_derived_type_dictionary): Fix
+	initializer for derived classes.
+
+	* test/variable.py
+	(VariableDerivationTestCase.test_derivation_10): New test.
+
+2007-07-22  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	--- Released 0.1.11 ---
+
+	* version: Release 0.1.11.
+
+	* NEWS: Update.
+
+	* notify/base.py: Improve documentation.
+	* notify/utils.py: Likewise.
+
+	* test/signal.py (HandlerGarbageCollectionTestCase): New test
+	case.
+
+	* notify/signal.py (Signal.emit): Gross speed optimization: only
+	call collect_garbage() if there might be garbage.  Actually, this
+	is only a heuristic, because a handler can be GC-collected just
+	after we find it is not a garbage, but such optimization is well
+	worth it.
+
+	* notify/bind.py (Binding.__hash__): Don't use id(), not
+	recommended.
+	* notify/mediator.py (_Function.__hash__): Likewise.
+	(__hash__): Remove altogether, not needed.
+
+2007-07-21  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* test/bind.py (BindingTestCase.test_creation_with_arguments)
+	(BindingWrapTestCase.test_wrap_with_arguments_1): New tests.
+
+	* notify/signal.py (Signal.emit): Small speed optimization.
+	(Signal.collect_garbage): Likewise.
+
+	* notify/condition.py (AbstractStateTrackingCondition._set):
+	Reimplement in a little more efficient way.
+	(_Not): Derive directly from `AbstractCondition' for efficiency;
+	adjust implementation as necessary.
+	(_Binary.__init__): Don't create equal but not identical bound
+	method objects.
+	(_IfElse.__init__): Likewise.
+
+2007-07-16  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/base.py
+	(AbstractValueObject._generate_derived_type_dictionary): Never use
+	`options' as locals or globals for evaluation.
+	* notify/condition.py
+	(AbstractStateTrackingCondition._generate_derived_type_dictionary):
+	Likewise.
+	* notify/variable.py
+	(AbstractValueTrackingVariable._generate_derived_type_dictionary):
+	Likewise.
+
+	* notify/base.py (AbstractValueObject._filter_options): New
+	method.
+
+2007-07-12  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/condition.py
+	(WatcherCondition._generate_derived_type_dictionary): Fix
+	exception message.
+
+2007-07-11  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/base.py
+	(AbstractValueObject._generate_derived_type_dictionary): Don't
+	hide `object' attribute of new class, unless its name is to be
+	`private' by Python rules.  Add `property' option.
+
+	* test/variable.py
+	(VariableDerivationTestCase.test_object_derivation_1)
+	(VariableDerivationTestCase.test_object_derivation_2): New tests.
+
+	* test/utils.py (UtilsTestCase.test_mangle_identifier): New test.
+
+	* test/all.py (AllTestCase.test_util): Test mangle_identifier()
+	presence.
+
+	* notify/utils.py (mangle_identifier): New function.
+
+2007-07-09  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/base.py
+	(AbstractValueObject._generate_derived_type_dictionary): Add and
+	implement `dict' option.
+
+	* test/base.py (BaseDerivationTestCase.test_derivation_dict_1)
+	(BaseDerivationTestCase.test_derivation_dict_2)
+	(BaseDerivationTestCase.test_derivation_dict_3)
+	(BaseDerivationTestCase.test_derivation_dict_4): New tests.
+
+2007-07-08  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/base.py (AbstractValueObject.derive_type): Revamp derived
+	type slot calculation algorithm, so that types are not create with
+	dictionary unless specifically requested.
+
+	* test/base.py (BaseDerivationTestCase): New test case.
+
+	* test/condition.py
+	(ConditionDerivationTestCase.test_derivation_slots): New test.
+
+	* test/variable.py
+	(VariableDerivationTestCase.test_derivation_slots): New test.
+
+	* test/__common.py (NotifyTestCase.non_existing_attribute_setter):
+	New method.
+
+	* test/all.py (AllTestCase.assert_is_class): Use it.
+
+	* test/utils.py (UtilsTestCase.test_as_string)
+	(UtilsTestCase.test_as_string_attributes): New tests.
+
+	* test/all.py (AllTestCase.test_util): Test `as_string' presence.
+
+	* notify/utils.py (_AsString): New helper class.
+	(as_string): New constant object of the class above.
+
+	* notify/base.py: Use it.
+	* notify/bind.py: Likewise.
+	* notify/condition.py: Likewise.
+	* notify/mediator.py: Likewise.
+	* notify/signal.py: Likewise.
+	* notify/variable.py: Likewise.
+
+2007-07-07  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* MANIFEST.in: Include `generate-tutorial.py' in distribution.
+
+	* test/utils.py (UtilsTestCase.test_is_callable): New test case.
+	(UtilsTestCase.test_dummy_reference): Use new is_callable().
+
+	* test/all.py (AllTestCase.assert_is_function): Allow functions to
+	be built-in.
+	(AllTestCase.test_util): Also test new is_callable().
+
+	* notify/utils.py (is_callable): New function.
+
+	* notify/base.py: Use it instead of built-in callable(), since
+	latter is deprecated in 2.6 and will be removed in Python 3000.
+	* notify/bind.py: Likewise.
+	* notify/condition.py: Likewise.
+	* notify/mediator.py: Likewise.
+	* notify/signal.py: Likewise.
+	* notify/variable.py: Likewise.
+
+2007-07-01  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* setup.py: Fix reST in package long description.
+
+	--- Released 0.1.10 ---
+
+	* version: Release 0.1.10.
+
+	* NEWS: Update.
+
+	* docs/tutorial.txt: Add one section.
+
+	* test/_2_5/base.py
+	(BaseChangesFrozenContextManagerTestCase.test_derived_variable_changes_frozen_1):
+	New test.
+
+	* test/base.py
+	(BaseWithChangesFrozenTestCase.test_with_derived_variable_changes_frozen_1):
+	New test.
+
+	* notify/base.py (AbstractValueObject._value_changed): Don't
+	change `__freeze_flag' anymore.
+	(AbstractValueObject.with_changes_frozen): Don't check
+	`__freeze_flag', always decide whether to emit by comparing new
+	and original values.
+	* notify/_2_5/base.py (changes_frozen): Likewise.
+
+2007-06-29  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* docs/tutorial.txt: Add one section.
+
+	* notify/base.py: Improve documentation.
+	* notify/signal.py: Likewise.
+	* notify/_2_5/base.py: Likewise.
+	* notify/_2_5/signal.py: Likewise.
+
+	* notify/base.py (AbstractValueObject): One more, cleaner
+	reimplementation of importing of 2.5 features.
+	* notify/signal.py (AbstractSignal): Likewise.
+
+2007-06-26  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* test/base.py (BaseWithChangesFrozenTestCase): New test case.
+
+	* notify/_2_5/base.py (changes_frozen): New function.
+
+	* notify/base.py (AbstractValueObject.__init__): Initialize new
+	`__freeze_flag' field to None.
+	(AbstractValueObject._value_changed): Use `emit' method instead of
+	just calling the signal (this is faster.)  Don't reference
+	`__signal' field three times, fetch it to a local variable.  Check
+	new `__freeze_flag' before emitting.
+	(AbstractValueObject.is_frozen)
+	(AbstractValueObject.with_changes_frozen): New methods.
+
+2007-06-24  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* generate-reference.py: Get rid of `import *'.
+	* generate-tutorial.py: Likewise.
+	* setup.py: Likewise.
+	* benchmark/benchmarking.py: Likewise.
+	* benchmark/emission.py: Likewise.
+	* benchmark/logical.py: Likewise.
+	* test/_gc.py: Likewise.
+	* test/base.py: Likewise.
+	* test/condition.py: Likewise.
+	* test/mediator.py: Likewise.
+	* test/signal.py: Likewise.
+	* test/utils.py: Likewise.
+	* test/variable.py: Likewise.
+	* test/_2_5/signal.py: Likewise.
+	* test/_2_5/base.py: Likewise.
+
+	* test/_2_5: New directory.
+	* test/_2_5/__init__.py: New file.
+	* test/_2_5/base.py: Rename from `test/_base_2_5.py'
+	* test/_2_5/signal.py: Rename from `test/_signal_2_5.py'
+
+	* generate-tutorial.py: If importing docutils fails, print a
+	helpful message.
+
+	* notify/_2_5/base.py: Improve documentation.
+	* notify/_2_5/signal.py: Likewise.
+
+	* notify/signal.py (AbstractSignal): Reimplement importing from
+	2.5 support modules to trick Epydoc into not noticing it.
+	* notify/base.py (AbstractValueObject): Likewise.
+
+	* generate-reference.py: Don't document new `notify._2_5' package.
+
+	* setup.py: Also install new `notify._2_5' package.  Take care to
+	not byte-compile 2.5-dependent files on earlier Python versions.
+
+	* notify/_2_5: New directory.
+	* notify/_2_5/__init__.py: New file.
+	* notify/_2_5/base.py: Rename from `notify/_base_2_5.py'
+	* notify/_2_5/signal.py: Rename from `notify/_signal_2_5.py'
+
+2007-06-23  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/signal.py (Signal.disconnect): Remove first equal handler
+	from the end of the list, not from the beginning.
+
+	* test/signal.py (SimpleSignalTestCase.test_connect_disconnect):
+	New test.
+
+	* test/__common.py (NotifyTestCase.simple_handler_100)
+	(NotifyTestCase.simple_handler_200): Move here from
+	`RecursiveEmissionSignalTestCase'.
+
+	* docs/tutorial.txt: Add one section.  Reorganize a little.
+
+	* notify/base.py (AbstractValueObject): Import methods from new
+	_base_2_5 module if Python features allow.
+	* notify/_base_2_5.py: New file.
+
+	* notify/signal.py (AbstractSignal): Import methods from new
+	_signal_2_5 module if Python features allow.
+	* notify/_signal_2_5.py: New file.
+
+	* test/base.py: New file
+	* test/_base_2_5.py: New file.
+
+	* test/signal.py: Import test cases from new _signal_2_5 module if
+	Python features allow.
+	* test/_signal_2_5.py: New file.
+
+	* test/__common.py (NotifyTestCase.note_skipped_tests): New
+	method.
+	(ignoring_exceptions): New class/function.
+
+	* benchmark.py: Run `build' target, not just `build_ext'.
+	* run-tests.py: Likewise.
+
+	* setup.py (build_ext.build_extension): Don't symlink unless there
+	is a link pointing to our target, not just any link.
+
+2007-06-22  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	--- Released 0.1.9 ---
+
+	* version: Release 0.1.9.
+
+	* NEWS: Update.
+
+	* setup.py: Add ``long'' package description
+	(configure): Rewrite to not overwrite `__init__.py' unless needed.
+	(build_ext.build_extension): Likewise don't symlink unless needed.
+
+	* setup.py: Bug-fix: used to fail if run as `python setup.py ...',
+	not just `./setup.py ...'.
+
+2007-06-19  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/signal.py: Improve documentation.
+
+	* test/signal.py (SimpleSignalTestCase.test_emission_level_1)
+	(SimpleSignalTestCase.test_emission_level_2)
+	(RecursiveEmissionSignalTestCase.test_unblock_in_recursive_emission_1)
+	(RecursiveEmissionSignalTestCase.test_unblock_in_recursive_emission_2):
+	New tests.
+
+	* test/all.py (AllTestCase.assert_is_class): Assert that all
+	non-exception classes are new-style classes.
+
+	* notify/gc.c (RaisingGCProtector_unprotect): Fix compilation
+	warnings.
+
+2007-06-16  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* test/_gc.py (RaisingGCProtectorTestCase): New test case.
+
+	* notify/gc.c (RaisingGCProtector_init): Rename from
+	DebugGCProtector_init().
+	(RaisingGCProtector_dealloc): Rename likewise.
+	(RaisingGCProtector_protect): Rename likewise.
+	(RaisingGCProtector_unprotect): Rename likewise.  Create an
+	exception of new `UnprotectionError' type and raise it instead.
+	(RaisingGCProtector_get_num_object_protections): Rename likewise.
+	(RaisingGCProtector_get_num_protected_objects): Rename likewise.
+	(RaisingGCProtector_get_num_active_protections): Rename likewise.
+	(DebugGCProtector_unprotect): New function.
+	(initgc): Register new `RaisingGCProtector' type and new
+	`UnprotectionError' exception type.
+
+	* README (About Py-notify): Style and grammar fixes.
+
+2007-06-13  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	--- Released 0.1.8 ---
+
+	* version: Release 0.1.8.
+
+	* NEWS: Update.
+
+	* test/bind.py (BindingTestCase.test_equality_1): Test all
+	standard binding types at once.  Also don't let dummy objects be
+	garbage-collected before binding comparison.
+	(BindingTestCase.test_equality_2): Likewise for all types.
+	(BindingTestCase.test_equality_3): Likewise.
+	(BindingTestCase.test_equality_4): Likewise.
+
+	* test/__common.py (NotifyTestCase.assert_equal_thoroughly): Also
+	test that if both values are hashable, then hashes are equal.
+
+	* notify/bind.py (Binding.__hash__): New method.
+	(WeakBinding.__init__): Reset new `__hash' slot.
+	(WeakBinding.__hash__): New method.
+
+	* notify/mediator.py (AbstractMediator.__hash__)
+	(BooleanMediator.__hash__, FunctionalMediator.__hash__)
+	(_ReverseMediator.__hash__, _Function.__hash__): New methods.
+
+2007-06-12  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/bind.py (Binding.__repr__, Binding.__str__)
+	(Binding.__to_string): New methods.
+
+	* notify/signal.py (AbstractSignal._additional_description): New
+	function (clone mechanism used by `AbstractValueObject' and its
+	descendants.)
+	(AbstractSignal.__to_string, AbstractSignal.__repr__)
+	(AbstractSignal.__str__): Rewrite to use new machinery.
+	(Signal._additional_description)
+	(CleanSignal._additional_description): New methods.
+
+	* notify/utils.py (DummyReference.__repr__)
+	(DummyReference.__str__): New methods.
+
+2007-06-11  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/condition.py
+	(AbstractStateTrackingCondition._generate_derived_type_dictionary):
+	If `setter' but not `getter' is specified, always invoke the
+	former from __init__() function of the new type.
+
+	* notify/variable.py
+	(AbstractValueTrackingVariable._generate_derived_type_dictionary):
+	Likewise.
+
+	* test/condition.py (ConditionDerivationTestCase.test_derivation_2)
+	(ConditionDerivationTestCase.test_derivation_3): New tests.
+
+	* test/variable.py (VariableDerivationTestCase.test_derivation_8)
+	(VariableDerivationTestCase.test_derivation_9): New tests.
+
+2007-06-10  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/bind.py (Binding.__eq__): Fix bug introduced in the
+	previous commit.
+
+	* test/all.py (AllTestCase.test_condition): Test
+	`AbstractStateTrackingCondition' too.
+	(AllTestCase.test_signal): Likewise for `AbstractSignal'.
+	(AllTestCase.test_variable): Likewise for
+	`AbstractValueTrackingVariable'.
+
+	* notify/bind.py: Don't assume that empty tuple is a singleton.
+	* notify/signal.py: Likewise.
+
+	* notify/signal.py (Signal.emit): Remove unneeded statement.
+
+	* notify/mediator.py (AbstractMediator): Add `__slots__ = ()'.
+
+	* test/all.py (AllTestCase.assert_is_class): Rewrite non-existing
+	attribute test to assign and not just read.
+	(AllTestCase.test_gc): Test `DebugGCProtector' too.
+	(AllTestCase.test_signal): Likewise for `CleanSignal'.
+
+	* TODO: Update.
+
+2007-04-22  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* examples/conditions_pygtk.py (Entry.__Text): Add
+	`allowed_value_types' option.
+	(PredicateConditionPage.build_contents): Initialize entry text to
+	show how it is possible with variables.
+
+	* notify/condition.py
+	(AbstractStateTrackingCondition._generate_derived_type_dictionary):
+	Rewrite to substitute custom proper set() method.
+
+	* notify/variable.py
+	(AbstractValueTrackingVariable._generate_derived_type_dictionary):
+	Likewise.
+
+	* test/variable.py (VariableDerivationTestCase.test_derivation_6)
+	(VariableDerivationTestCase.test_derivation_7): New tests.
+
+	* test/condition.py (ConditionDerivationTestCase): New test case.
+
+	* notify/condition.py
+	(PredicateCondition._generate_derived_type_dictionary)
+	(WatcherCondition._generate_derived_type_dictionary): New
+	functions, just raise `TypeError' unconditionally.
+
+	* notify/variable.py
+	(WatcherVariable._generate_derived_type_dictionary): Likewise.
+
+2007-04-20  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* test/condition.py (LogicConditionTestCase.test_if_else_1):
+	Rename from test_if_else().
+	(LogicConditionTestCase.test_if_else_2): New test.
+
+	* notify/condition.py (_IfElse.__on_if_term_change): Fix.
+
+2007-04-18  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* setup.py: Replace package description.
+
+2007-04-17  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/condition.py (_IfElse.__on_if_term_change): Rewrite to
+	never use array indirection.
+
+	* notify/signal.py (CleanSignal.collect_garbage): Inline
+	superclass method for speed.
+
+	* benchmark/benchmarking.py (_ConfigurationParser): Remove, since
+	it is unused and was replaced by `ConfigObj' long ago.
+
+2007-04-14  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* docs/epydoc.css: Remove some styles so that `a' are more
+	uniform.
+
+	* notify/condition.py: Improve and expand documentation.
+	* notify/variable.py: Likewise.
+
+	* notify/condition.py (WatcherCondition.watch): Return boolean
+	indicating if self state has changed.  Return early if
+	`condition_to_watch' is already the watched one.
+	* notify/variable.py (WatcherVariable.watch): Likewise.
+
+2007-04-11  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* NEWS: Fix.
+
+2007-04-10  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	--- Released 0.1.7 ---
+
+	* version: Release 0.1.7.
+
+	* NEWS: Update.
+
+	* test/condition.py (PredicateConditionTestCase): New test case.
+
+	* test/utils.py: New file.
+
+	* examples/conditions_pygtk.py: Print short explanation of what's
+	wrong if importing `notify' fails.
+
+2007-04-09  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/condition.py (_Binary, _And, _Or, _Xor): Replace
+	`_num_true_conditions' with `_term_state' and reimplement
+	accordingly.  Otherwise __on_usage_change() could access a
+	garbage-collected condition.
+
+	* examples/conditions_pygtk.py: Make it find the non-installed
+	`notify' module in the parent directory.  Make it work with old
+	PyGTK versions.
+
+	* notify/base.py: Don't use `import *'.
+	* notify/bind.py: Likewise.
+	* notify/condition.py: Likewise.
+	* notify/mediator.py: Likewise.
+	* notify/signal.py: Likewise.
+	* notify/variable.py: Likewise.
+
+	* notify/base.py: Improve and expand documentation.
+	* notify/bind.py: Likewise.
+	* notify/condition.py: Likewise.
+	* notify/signal.py: Likewise.
+	* notify/utils.py: Likewise.
+
+	* notify/condition.py (PredicateCondition.update): Return whether
+	the state has changed.
+
+	* notify/base.py (AbstractValueObject.synchronize): Raise
+	`ValueError' if trying to synchronize with self.
+	(AbstractValueObject.synchronize_safe): Likewise.
+	(AbstractValueObject.derive_type): Rename `self_class' to
+	`cls' (also affects related functions), as recommended.
+
+2007-04-08  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* examples/README: New file.
+
+	* examples/conditions_pygtk.py: New file.
+
+	* notify/condition.py (_IfElse.__on_term_change): Remove method.
+	(_IfElse.__on_if_term_change, _IfElse.__on_then_term_change)
+	(_IfElse.__on_else_term_change): New methods.
+	(_IfElse.__invert__): New method.
+	(_IfElse.__repr__): Don't print references, get the referred
+	conditions.
+	(_IfElse.__str__): Likewise.
+
+	* test/condition.py (LogicConditionTestCase.test_not): Also assert
+	that state changes as it should.
+	(LogicConditionTestCase.test_and): Likewise.
+	(LogicConditionTestCase.test_or): Likewise.
+	(LogicConditionTestCase.test_xor): Likewise.
+	(LogicConditionTestCase.test_if_else): Likewise.
+
+	* benchmark/benchmarking.py: Modify to allow executing only some
+	benchmarks by their names,
+
+	* benchmark/logical.py: New file.
+
+	* docs/epydoc.css: Make more names monospace.
+
+	* generate-reference.py: More post-processing.
+
+	* test/condition.py
+	(WatcherConditionTestCase.test_watcher_condition_1): Test new
+	`watched_condition' property too.
+	(WatcherConditionTestCase.test_watcher_condition_2): Likewise.
+	(WatcherConditionTestCase.test_watcher_condition_error_3):
+	Likewise.  Expect another exception type when trying to watch
+	self.
+
+	* test/variable.py
+	(WatcherVariableTestCase.test_watcher_variable_1): Test new
+	`watched_variable' property too.
+	(WatcherVariableTestCase.test_watcher_variable_2): Likewise.
+	(WatcherVariableTestCase.test_watcher_variable_error_3): Likewise.
+	Expect another exception type when trying to watch self.
+
+	* notify/condition.py (WatcherCondition.watch): Raise `ValueError'
+	if trying to watch self.
+	(WatcherCondition.watched_condition): New property.
+
+	* notify/variable.py (WatcherVariable.watch): Raise `ValueError'
+	if trying to watch self.
+	(WatcherVariable.watched_variable): New property.
+
+2007-04-06  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/base.py: Improve and expand documentation.
+	* notify/bind.py: Likewise.
+	* notify/condition.py: Likewise.
+	* notify/mediator.py: Likewise.
+	* notify/signal.py: Likewise.
+	* notify/utils.py: Likewise.
+	* notify/variable.py: Likewise.
+
+2007-04-05  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/condition.py (Condition.set): Return _set() value.
+	* notify/variable.py (Variable.set): Likewise.
+
+	* notify/variable.py (AbstractVariable.is_not_empty): Remove
+	function, since it is equal to is_true() except it raises on
+	non-sequence values.
+
+	* test/variable.py (BaseVariableTestCase.test_is_not_empty):
+	Remove test.
+
+	* MANIFEST.in: Include several forgotten files.
+
+	* test/variable.py (VariableDerivationTestCase.test_derivation_5):
+	New test for the added option.
+
+	* notify/variable.py
+	(AbstractValueTrackingVariable._generate_derived_type_dictionary):
+	Add `default_value' option.
+
+	* docs/tutorial.txt: Add one section.
+
+2007-04-04  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	--- Released 0.1.6 ---
+
+	* version: Release 0.1.6.
+
+	* NEWS: Update.
+
+	* test/_gc.py: New file.
+
+	* notify/gc.c: Add more documentation.
+	(FastGCProtector_properties): Rename `num_protected_objects' to
+	`num_active_protections'.
+	(FastGCProtector_new): Reimplement.
+	(FastGCProtector_init): Don't initialize `num_active_protections'
+	anymore: not needed with reimplemented FastGCProtector_new().
+	(FastGCProtector_protect): As a special case, do nothing for
+	`None'.
+	(FastGCProtector_unprotect): Likewise.
+	(FastGCProtector_unprotect): Don't decref/incref in succession, it
+	may well corrupt memory.
+	(FastGCProtector_get_num_active_protections): Rename from
+	FastGCProtector_get_num_protected_objects().
+	(DebugGCProtector_init, DebugGCProtector_dealloc)
+	(DebugGCProtector_protect, DebugGCProtector_unprotect)
+	(DebugGCProtector_get_num_object_protections)
+	(DebugGCProtector_get_num_protected_objects)
+	(DebugGCProtector_get_num_active_protections): New functions.
+	(initgc): Register new protector type.
+	(AbstractGCProtector_protect, AbstractGCProtector_unprotect)
+	(AbstractGCProtector_set_default, FastGCProtector_protect)
+	(FastGCProtector_unprotect): Turn to keyword-accepting functions.
+
+2007-04-02  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/base.py: Improve and fix documentation.
+	* notify/bind.py: Likewise.
+	* notify/signal.py: Likewise.
+	* notify/utils.py: Likewise.
+
+	* notify/base.py (AbstractValueObject.__get_changed_signal):
+	Rename from signal_changed(): adopt "Don't repeat yourself"
+	principle and make method private since there is an analoguous
+	public property.
+
+	* notify/signal.py (AbstractSignal._get_emission_level): Likewise,
+	rename from get_emission_level().
+	(AbstractSignal._is_emission_stopped): Likewise, rename from
+	is_emission_stopped().
+	(Signal._get_emission_level, Signal._is_emission_stopped):
+	Likewise.
+
+	* notify/bind.py (Binding._get_object): Likewise, rename from get_object().
+	(Binding._get_function): Likewise, rename from get_function().
+	(Binding._get_class): Likewise, rename from get_class().
+	(Binding._get_arguments): Likewise, rename from get_arguments().
+	(WeakBinding._get_object): Likewise.
+
+	* test/signal.py (SimpleSignalTestCase.test_emission_stop_3): New
+	test.
+
+	* notify/signal.py (AbstractSignal.default_exception_handler):
+	Split definition for Python 2.5+ and older Pythons.
+	(AbstractSignal.emission_level, AbstractSignal.emission_stopped):
+	Fix definition since getter functions are meant to be virtual.
+
+2007-04-01  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* setup.py (build_ext.build_extension): Fix symlink creation.
+
+	* notify/base.py: Improve and fix documentation.
+	* notify/bind.py: Likewise.
+	* notify/condition.py: Likewise.
+	* notify/mediator.py: Likewise.
+	* notify/signal.py: Likewise.
+	* notify/variable.py: Likewise.
+
+	* notify/mediator.py (AbstractMediator.__ne__): Reimplement,
+	taking into account that __eq__() may return `NotImplemented'.
+	(BooleanMediator.__eq__): Return `NotImplemented' if `other' is
+	not a `BooleanMediator'.
+	(FunctionalMediator.__eq__): Likewise for `FunctionalMediator'.
+	(_ReverseMediator.__eq__): Likewise for `_ReverseMediator'.
+
+	* notify/signal.py (CleanSignal.__init__): Make `parent' argument
+	optional.
+
+	* notify/condition.py (AbstractCondition.__and__): Don't raise
+	TypeError right away, return NotImplemented instead.
+	(AbstractCondition.__or__): Likewise.
+	(AbstractCondition.__xor__): Likewise.
+	(_True.__and__): Likewise.
+	(_True.__or__): Likewise.
+	(_True.__xor__): Likewise.
+	(_False.__and__): Likewise.
+	(_False.__or__): Likewise.
+	(_False.__xor__): Likewise.
+
+	* test/condition.py (LogicConditionTestCase.test_if_else): Rename
+	from test_ifelse().
+	(GarbageCollectionConditionTestCase.test_garbage_collection_if_else):
+	Rename from test_garbage_collection_ifelse().
+
+	* notify/condition.py (AbstractCondition.if_else): Rename from
+	ifelse().
+	(_True.if_else): Likewise.
+	(_False.if_else): likewise.
+	(_Not.if_else): Likewise.
+
+	* generate-reference.py: Build extension first, otherwise
+	reference building gives warnings.
+	* run-tests.py: Likewise.
+	* benchmark.py: Likewise.
+
+2007-03-31  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* test/variable.py (VariableDerivationTestCase.test_derivation_1):
+	Use simpler syntax as allowed by 24 March changes.
+	(VariableDerivationTestCase.test_derivation_3): Likewise.
+	(VariableDerivationTestCase.test_multiple_derivation): Likewise.
+
+	* notify/signal.py (Signal.emit): Optimize: variable `value' is
+	never used if `accumulator' is not set; don't track `index',
+	garbage-collected handlers will be removed by collect_garbage()
+	later.  Move collect_garbage() to `finally' clause.
+
+2007-03-25  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* docs/tutorial.txt: Typo, style and other fixes.
+
+2007-03-24  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/variable.py
+	(AbstractValueTrackingVariable._generate_derived_type_dictionary):
+	Make it possible to specify a single type as
+	`allowed_value_types'.
+
+2007-03-04  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* README (Copyright and Licenses): Fix a filename.
+
+2007-03-03  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	--- Released 0.1.5 ---
+
+	* version: Release 0.1.5.
+
+	* NEWS: Update.
+
+	* docs/tutorial.txt: Expand.
+
+	* docs/reST.css: Change appearance of contents list.
+
+	* docs/reST.template: Remove file.
+
+	* generate-tutorial.py: Embed stylesheet by default.  Don't use
+	the custom template.
+
+2007-02-27  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/gc.c: Add `num_protected_objects' property to
+	`FastGCProtector' type.
+	(FastGCProtector_new, FastGCProtector_init)
+	(FastGCProtector_get_num_protected_objects): New functions.
+
+	* notify/base.py (AbstractValueObject): New property.
+	(AbstractValueObject._value_changed): Rename from _changed().
+
+	* notify/signal.py (Signal.emit): Make reemission work after
+	previous emission has been stopped but before previous call has
+	ended.
+	(AbstractSignal.stop_emission): Fix documentation accordingly.
+	(AbstractSignal.is_emission_stopped, Signal.is_emission_stopped):
+	New functions.
+	(AbstractSignal.emission_level, AbstractSignal.emission_stopped)
+	(Signal.accumulator): New properties.
+
+	* generate-reference.py: Output some helpful hints in the end.
+	Generate reference in `docs/reference', not in `html' by default.
+
+	* docs/tutorial.txt: New file.
+	* docs/reST.css: New file.
+	* docs/reST.template: New file.
+	* generate-tutorial.py: New file.
+
+2007-02-25  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/bind.py (Binding.__eq__): Add a case for plain functional
+	`other'.
+
+	* test/bind.py (BindingTestCase.test_equality_1)
+	(BindingTestCase.test_equality_2)
+	(BindingTestCase.test_equality_3)
+	(BindingTestCase.test_equality_4): New tests.
+
+	* test/__common.py (NotifyTestCase.assert_equal_thoroughly)
+	(NotifyTestCase.assert_not_equal_thoroughly): New functions.
+
+	* notify/base.py: Improve documentation.
+	* notify/bind.py: Likewise.
+	* notify/gc.c: Likewise.
+	* notify/mediator.py: Likewise.
+	* notify/utils.py: Likewise.
+
+	* notify/bind.py (Binding.__eq__): Return `NotImplemented' in case
+	of a non-compatible `other' argument.
+	(Binding.__ne__): Reimplement, since `NotImplemented' can be now
+	returned.
+
+	* setup.py (build_ext.build_extension): Reimplement symlinking.
+
+	* notify/gc.c (AbstractGCProtector_protect): Pass `function_name'
+	to `raise_not_implemented_exception'.
+	(AbstractGCProtector_unprotect): Likewise.
+
+	* notify/utils.py (raise_not_implemented_exception): Add optional
+	`function_name' argument.
+
+2007-02-19  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/base.py (AbstractValueObject.__nonzero__): Remove.
+
+	* notify/variable.py (AbstractVariable): Remove all operation
+	methods, as they were quite different from `AbstractCondition'
+	methods.  Explicitly getting `value' beforehand is not that
+	difficult.
+
+	* setup.py: Bump development status to beta.  Mention C in
+	programming languages.
+
+2007-02-18  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/bind.py (Binding.wrap): Check that `callable_object' is
+	indeed callable.
+
+	* INSTALL: Mention C compiler requirement.
+
+	* notify/gc.c (AbstractGCProtector_set_default): Use non-checking
+	reference macros.
+	(FastGCProtector_protect): Likewise.
+	(FastGCProtector_unprotect): Likewise.
+	(initgc): Likewise.
+
+	* notify/base.py (AbstractValueObject.derive_type): Simplify a
+	little.
+
+2007-02-17  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/base.py (AbstractValueObject.desynchronize)
+	(AbstractValueObject.desynchronize_fully): New functions.
+
+2007-02-16  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	--- Released 0.1.4 ---
+
+	* version: Release 0.1.4.
+
+	* NEWS: Update.
+
+2007-02-15  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* setup.py: Fix for the case of existing symbolic link.
+
+	* TODO: Update.
+
+	* test/all.py (AllTestCase.test_gc): New test.
+	(AllTestCase.test_util): Don't test removed functions anymore.
+
+	* notify/condition.py: Use new gc-protector instead of the removed
+	functions everywhere.
+	* notify/signal.py: Likewise.
+	* notify/variable.py: Likewise.
+
+	* notify/utils.py (_USED_OBJECTS): Remove variable.
+	(mark_object_as_used, mark_object_as_unused): Remove functions.
+
+	* notify/all.py: Import new `notify.gc' module.
+
+	* setup.py: Build it as a C extension.
+
+	* notify/gc.c: New file.
+
+2007-02-13  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* benchmark/benchmarking.py (Benchmark.has_been_run)
+	(Benchmark.get_full_name): New functions.
+	(BenchmarkProgram.run): Use new `__do_run' function instead of
+	directly calling `run' on `self.__suite'.
+	(BenchmarkProgram.__build_parser): Add `--force' option.
+	(BenchmarkProgram.__do_run): New function.
+	(BenchmarkProgram.__store_results): Check if benchmark test has
+	been run at all.
+	(BenchmarkProgram.__test_is_new): New function.
+
+	* test/all.py (AllTestCase.assert_is_function): New function.
+	(AllTestCase.test_util): New test.
+
+	* notify/bind.py (WeakBinding.__init__): Store `callback' argument
+	in the object and use new internal `__object_garbage_collected'
+	function as a proxy.  Initialize `_object' field to new
+	`_NONE_REFERENCE' variable if no object is present.
+	(WeakBinding.__call__): Adjust for new scheme.
+	(WeakBinding.__object_garbage_collected): New function.
+	(WeakBinding.__nonzero__): Adjust for new scheme.
+	(_NONE_REFERENCE): New internal constant.
+
+	* notify/utils.py (DummyReference): Move here from
+	`notify/condition.py' and rename from `_DummyReference'.
+
+2007-02-11  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/all.py: Change to a list of plain imports (more readable
+	and doesn't seem to change anything; suggested by Edward Loper.)
+
+	* notify/all.py: Calculate `__all__' variable from imported
+	modules.
+
+	* test/bind.py (BindingWrapTestCase.test_wrap_5): Don't test
+	hashes.
+
+	* notify/bind.py (Binding): Remove: changeable object cannot be
+	used as dictionary keys.
+
+2007-02-09  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* benchmark/emission.py (EmissionBenchmark1): Rename from
+	`EmissionBenchmark'.
+	(EmissionBenchmark2): New benchmark test.
+	(GObjectEmissionBenchmark1): Rename from
+	`GObjectEmissionBenchmark'.
+	(GObjectEmissionBenchmark2): New benchmark test.
+	(_Dummy): New class.
+
+2007-02-03  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/mediator.py (_identity): New function.
+
+	* test/all.py (AllTestCase.assert_is_class): Check that classes
+	define `__slots__' variable appropriately.
+
+	--- Released 0.1.3 ---
+
+	* version: Release 0.1.3.
+
+	* NEWS: Update.
+
+	* test/variable.py (WatcherVariableTestCase): New test case (much
+	like `WatcherConditionTestCase'.)
+	(BaseVariableTestCase.test_predicate): Test that predicate
+	condition is not mutable.
+
+	* test/all.py (AllTestCase.test_variable): Test that it is
+	defined.
+
+	* notify/variable.py (WatcherVariable): New class (much like
+	`WatcherCondition'.)
+
+2007-02-02  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* test/variable.py (BaseVariableTestCase): New test case.
+	(VariableDerivationTestCase.test_derivation_4): New test.
+
+2007-02-01  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/signal.py (Signal.is_connected): Don't expand `arguments'
+	tuple when constructing `Binding'.
+	(Signal.is_blocked): Likewise.
+	(Signal.disconnect): Likewise.
+	(Signal.disconnect_all): Likewise.
+	(Signal.block): Likewise.
+	(Signal.unblock): Likewise.
+
+	* test/signal.py
+	(SimpleSignalTestCase.test_connect_with_arguments): New test.
+
+	* benchmark/emission.py (GObjectEmissionBenchmark.get_version):
+	New function.
+
+	* benchmark/benchmarking.py (Benchmark.get_description): Rename
+	from description().
+	(Benchmark.get_version): New function.
+	(BenchmarkProgram.__store_results): Use it.
+
+	* notify/bind.py (Binding.get_object, Binding.get_function)
+	(Binding.get_class, Binding.get_arguments): New functions.
+	(Binding): Use new functions instead of properties.  Make
+	properties use functions and not access fields directly.
+	(WeakBinding.get_object): Rename from __get_object().
+	(WeakBinding.__call__): Don't call super method and inline it
+	instead (major speed improvement, so "do what is right" is
+	sacrificed in this case.)
+
+2007-01-31  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/signal.py
+	(AbstractSignal.LastValueAccumulator.accumulate_value): Typo fix:
+	rename from accumulated_value().
+	(AbstractSignal.ValueListAccumulator.accumulate_value): Likewise.
+	Return `accumulated_value', not `None'.
+
+	* test/signal.py (AccumulatorSignalTestCase): New test case.
+
+	* notify/signal.py (Signal): Partially reimplement blocked
+	handlers: store zero of them as the empty tuple.  Don't use a
+	local variable in emit() function.
+	(Signal.emit): One more fix for a present accumulator and zero
+	handlers.  Don't inline collect_garbage() since it is meant to be
+	a virtual method.
+
+2007-01-30  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* test/signal.py
+	(RecursiveEmissionSignalTestCase.test_block_in_recursive_emission_1):
+	Rename from `test_block_in_recursive_emission'.
+	(RecursiveEmissionSignalTestCase.test_block_in_recursive_emission_2):
+	New test.
+
+2007-01-29  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/signal.py (Signal.emit): Fix for the case of present
+	accumulator and zero handlers.  Optimize for speed a little.
+
+	* benchmark/benchmarking.py: Add option for number of runs.
+
+2007-01-28  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	--- Released 0.1.2 ---
+
+	* version: Release 0.1.2.
+
+	* NEWS: Update.
+
+	* MANIFEST.in: Distribute new benchmarking files.
+
+	* notify/signal.py (AbstractSignal.connect_safe): Fix: expand
+	`arguments' before passing them to AbstractSignal.do_connect().
+
+	* benchmark/configobj.py: New file, by Michael Foord and Nicola
+	Larosa.
+
+	* benchmark.py: New file.
+	* benchmark/__init__.py: New file.
+	* benchmark/benchmarking.py: New file.
+	* benchmark/emission.py: New file.
+
+	* notify/signal.py (AbstractSignal._wrap_handler): Fix: don't pass
+	`arguments' to WeakBinding.wrap() expanded.
+
+	* test/condition.py: Use new `NotifyTestCase.collect_garbage'
+	function everywhere.
+	* test/bind.py: Likewise.
+
+	* test/__common.py (NotifyTestCase.setUp)
+	(NotifyTestCase.collect_garbage): New functions.
+
+	* notify/condition.py (WatcherCondition._create_signal): Account
+	for the change in `CleanSignal' interface.
+	(_Not._create_signal): Likewise.
+	(_Binary._create_signal): Likewise.
+	(_IfElse._create_signal): Likewise.
+	* notify/variable.py (_PredicateOverVariable._create_signal):
+	Likewise.
+
+	* notify/signal.py (CleanSignal): Reimplement: add `__parent'
+	field and `orphan' method; don't mark self as used if
+	orphaned (i.e. if don't have a parent.)
+
+	* test/condition.py
+	(GarbageCollectionConditionTestCase.test_signal_garbage_collection):
+	Fix: remove reference from condition to make it
+	garbage-collectable.
+
+	* notify/condition.py (WatcherCondition.watch): Fix
+	is-valid-to-watch condition.
+
+	* test/condition.py (WatcherConditionTestCase): New test case.
+
+2007-01-26  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* generate-reference.py: Use new `doc/epydoc.css'.  More
+	post-processing.
+
+	* docs/epydoc.css: New file.
+
+2007-01-25  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* test/condition.py
+	(GarbageCollectionConditionTestCase.test_garbage_collection_signal_referenced_1)
+	(GarbageCollectionConditionTestCase.test_garbage_collection_signal_referenced_2)
+	(GarbageCollectionConditionTestCase.test_signal_garbage_collection):
+	New tests.
+
+2007-01-24  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* generate-reference.py: Don't generate marked up source code
+	files by default.
+
+2007-01-23  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	--- Released 0.1.1 ---
+
+	* version: Release 0.1.1.
+
+	* NEWS: New file.
+
+	* MANIFEST.in: Include `notify/__init__.py.in', exclude the
+	generated file.
+
+	* notify/signal.py (Signal.disconnect): Reset `self._handlers' to
+	None if possible.
+	(CleanSignal.collect_garbage): collect_garbage() doesn't return
+	anything, remove it from the test.
+
+2007-01-21  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/signal.py (AbstractSignal.default_exception_handler)
+	(AbstractSignal.ignoring_exception_handler)
+	(AbstractSignal.printing_exception_handler)
+	(AbstractSignal.reraising_exception_handler): New functions.
+	(Signal.emit): Call `AbstractSignal.exception_handler' on
+	exceptions raised from handlers.
+	(Signal): Make `_handlers' and `_blocked_handlers' protected.
+	(CleanSignal.collect_garbage): Rewrite.
+
+	* test/condition.py (BaseConditionTestCase.test_mutable): Expand.
+
+	* generate-reference.py: Rename from `generate-docs.py'.
+
+2007-01-17  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* generate-docs.py: Update post-processing for newer Epydoc.
+
+	* notify/variable.py (_PredicateOverVariable): Update for new
+	signal storage and creation scheme.
+
+	* notify/condition.py (WatcherCondition): Update for new signal
+	storage and creation scheme.
+	(_Not): Likewise.
+	(_Binary): Likewise.
+	(_IfElse): Likewise.
+
+	* notify/signal.py (CleanSignal): Reimplement completely.
+
+	* notify/utils.py (_USED_OBJECTS, mark_object_as_used)
+	(mark_object_as_unused): Variable and function moved here from
+	`notify.base' module.
+
+	* notify/base.py (_USED_VALUE_OBJECTS): Remove from this module.
+	(AbstractValueObject.signal_changed): Reimplement for new storage
+	scheme.
+	(AbstractValueObject._create_signal): Likewise.
+	(AbstractValueObject._changed): Likewise.
+	(AbstractValueObject._set_used, AbstractValueObject._set_unused):
+	Remove from this class and module.
+
+	* run-tests.py: Reimplement so it is possible to run tests by
+	name.
+
+2007-01-16  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* README: Clarify section about standard test cases.
+
+	* test/condition.py
+	(SignalConditionTestCase.test_referenced_signal): New test.
+
+2007-01-15  Paul Pogonyshev  <pogonyshev@gmx.net>
+
+	* notify/condition.py (_Binary._get_dummy_reference): Remove
+	method.
+	(_IfElse): Reimplement completely and thus make new test pass.
+	(_DummyCondition): Remove class (unused.)
+	(_get_dummy_reference): New function, replaces removed method of
+	`_Binary' class.
+
+	* test/condition.py
+	(GarbageCollectionConditionTestCase.test_garbage_collection_ifelse):
+	New test.
+
+	* notify/condition.py: Add one-sentence documentation.
+	* notify/variable.py: Likewise.
+
+
+
+Changes before the project registration on Gna! (2007-01-13) were not logged.
+
+
+  Copyright (C) 2007, 2008 Paul Pogonyshev.
+
+  Copying and distribution of this file, with or without modification,
+  are permitted provided the copyright notice and this notice are preserved.
+
+
+
+Local Variables:
+coding: utf-8
+End:

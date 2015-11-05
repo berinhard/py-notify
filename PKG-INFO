@@ -1,0 +1,35 @@
+Metadata-Version: 1.0
+Name: py-notify
+Version: 0.3.1
+Summary: An unorthodox implementation of Observer programming pattern.
+Home-page: http://home.gna.org/py-notify/
+Author: Paul Pogonyshev
+Author-email: py-notify-dev@gna.org
+License: GNU Lesser General Public License v2.1
+Download-URL: http://download.gna.org/py-notify/
+Description: 
+        Py-notify is a Python package providing tools for implementing `Observer programming
+        pattern`_.  These tools include signals, conditions and variables.
+        
+        Signals are lists of handlers that are called when signal is emitted. Conditions are
+        basically boolean variables coupled with a signal that is emitted when condition state
+        changes. They can be combined using standard logical operators (*not*, *and*, etc.) into
+        compound conditions. Variables, unlike conditions, can hold any Python object, not just
+        booleans, but they cannot be combined.
+        
+        For more verbose introduction, please refer to the tutorial_.
+        
+        .. _Observer programming pattern:
+        http://en.wikipedia.org/wiki/Observer_pattern
+        
+        .. _tutorial:
+        http://home.gna.org/py-notify/tutorial.html
+        
+Platform: UNKNOWN
+Classifier: Topic :: Software Development :: Libraries :: Python Modules
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)
+Classifier: Development Status :: 4 - Beta
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: C

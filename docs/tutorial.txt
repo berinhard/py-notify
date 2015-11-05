@@ -1,0 +1,757 @@
+Py-notify Tutorial
+==================
+
+:Author:  Paul Pogonyshev
+:Version: 0.2
+:Date:    January 2008
+
+.. contents::
+
+
+Overview
+********
+
+Py-notify is an unorthodox implementation of `Observer programming
+pattern`_.  Most important concepts of the library are *signals*,
+*conditions* and *variables*.
+
+At the core of the package are *signals*.  They are lists of
+callables, termed *handlers*.  Signals can be emitted, in which case
+all connected handlers are called in turn.  The idea here is
+separation of event *notifier* and *listeners*: when you emit a
+signal, you don’t need to know who listens to it, i.e. what handlers
+are connected to it.
+
+You may have encountered signals elsewhere, since they are quite a
+widespread construct.  Among others, there are signals in `GTK+`_ (and
+hence in PyGTK_), in Boost_, `sigc++`_ and so on.  They all have
+certain similarity and provide more or less the same functionality.
+The major distinction is that Py-notify signals *are not typed*,
+following base Python design principle.  You can pass any arguments to
+a function and so you can pass any arguments when emitting a signal.
+However, function can fail with those arguments, and so can signal
+handlers.
+
+On top of the signals two other main concepts of Py-notify are built:
+*conditions* and *variables*.
+
+Conditions are boolean values paired with one signal (the ‘changed’
+signal), which is emitted when condition *state* changes.  Conditions
+can be mutable (settable by you) or not, which state is computed in
+some predefined way.  There is an all-purpose ``Condition`` class,
+instances of which are mutable.  But if you need special
+functionality, like retrieving state using certain function, you can
+easily derive a new type.
+
+Conditions of any type can be combined using logic operators.  The
+result is yet again a condition, with its own ‘changed’ signal.  This
+way you can track states of compound logical expressions, like “number
+of frobnicators is at least 3 *and* there is a doodle”.
+
+Variables are much like conditions, but can hold arbitrary *value*
+instead of a boolean *state*.  Variables cannot be combined using
+logic operations, but have a different interesting feature:
+``predicate()`` method.  It returns a condition, which state is always
+the given predicate over variable’s value.  In other words, if
+variable’s value changes, predicate condition state is automatically
+recomputed and might change as well.
+
+Main idea of both conditions and variables is similar to that of
+signals: separate provider of boolean state or arbitrary value from
+parties interested in it.
+
+
+
+Signals
+*******
+
+Without any further chit-chat, let’s create our first Py-notify
+program.
+
+::
+
+    from notify.all import *
+
+    def inform_of_frobnicator (frobnicator_type, num_tentacles):
+        print ("A frobnicator of type '%s' with %d tentacles has arrived"
+               % (frobnicator_type, num_tentacles))
+
+    total_tentacles = 0
+
+    def count_tentacles (frobnicator_type, num_tentacles):
+        global total_tentacles
+        total_tentacles += num_tentacles
+        print 'Total tentacles so far: %s' % total_tentacles
+
+    def run_if_scary (frobnicator_type, num_tentacles):
+        if frobnicator_type == 'Slimy':
+            print 'I panic'
+            import sys
+            sys.exit ()
+
+    new_frobnicator = Signal ()
+    new_frobnicator.connect (inform_of_frobnicator)
+    new_frobnicator.connect (count_tentacles)
+    new_frobnicator.connect (run_if_scary)
+
+    new_frobnicator ('Friendly', 8)
+    new_frobnicator ('Sleepy',   4)
+    new_frobnicator ('Slimy',    12)
+    new_frobnicator ('Hungry',   6)
+
+Now, that is pretty much for a first program, but let’s be bold.
+First line shows how you can avoid caring about specific modules in
+Py-notify package.  Though, of course, you can import from different
+modules as usually.  Following are declarations of three functions.
+They contain nothing specific to Py-notify and you can just skip over.
+The only thing worth mentioning is the same signature.  We *expect*
+that those two arguments will be passed on each signal invocation.
+
+Now we come to interesting part.  First is the creation of the signal.
+Since Py-notify signals are not typed, there is really not much to
+pass to constructors (except for optional *accumulator* which is
+described below).  Next we connect our three functions as handlers to
+the signal.  Note that handlers only need to be callable, they all
+just happen to be functions in our case.  In particular, methods can
+be used as handlers too.
+
+Final four lines are the most interesting.  The four statements are
+nothing else than *emissions* of the signal.  You can as well call
+``emit()`` method, but just calling signal is absolutely the same.
+So, it is only matter of taste which way to choose.  Note that in each
+emission we pass two arguments.  These arguments have absolutely no
+meaning to signal itself and are simply passed on to handlers.
+
+Here is the output of the example::
+
+    A frobnicator of type 'Friendly' with 8 tentacles has arrived
+    Total tentacles so far: 8
+    A frobnicator of type 'Sleepy' with 4 tentacles has arrived
+    Total tentacles so far: 12
+    A frobnicator of type 'Slimy' with 12 tentacles has arrived
+    Total tentacles so far: 24
+    I panic
+
+First thing to note is that the handlers are called in order of
+connection.  So, order can be important.  Next we note that handlers
+are completely independent of each other.  We could as well not
+connect some of them—it wouldn’t have any effect on the others.  At
+emission time we don’t need to know what handlers there are either.
+
+So, part of the code that notes arrival of frobnicators doesn’t care
+how such arrival is treated and who—if anyone—listens for it.  That’s
+the whole point of signals or Observer programming pattern for that
+matter.
+
+There is certain notifier which provides a well-defined protocol for
+its notification—in our case, the ``Signal`` object.  There can be
+listeners for those notifications.  Notifier doesn’t need to know
+about listeners, as well as listeners don’t need to know anything
+about the notifier except the protocol.  In particular, notifier can
+reside in a library and listeners in client code.
+
+
+
+Handlers
+~~~~~~~~
+
+In our first example we connected a number of handlers to a signal.
+Now let’s consider what is possible to do with handlers closer.
+
+Sometimes, you want to connect a handler only for a limited time—not
+for the whole lifetime of the signal—and disconnect it later.  The
+natural question is, of course, what identifies a handler?  Most
+signal libraries I know of assign a special identifier to a
+connection, for performance reasons.  Py-notify takes a different
+approach here: you just pass the handler again.
+
+Comparison of handlers done by signals is less efficient than
+comparison of identifiers.  However, it is simpler to use (no need to
+store identifier around) and is more in line with Python ideology.
+Besides, handler disconnection should be rare enough to not bother
+about efficiency anyway.
+
+Here is a simple example::
+
+    from notify.all import *
+
+    def note (object):
+        print 'emitted with %s' % object
+
+    signal = Signal ()
+
+    signal.connect (note)
+    signal ('foo')
+
+    signal.disconnect (note)
+    signal ('bar')
+
+And the output is::
+
+    emitted with foo
+
+Signal is emitted twice, but ``note()`` handler is only called during
+the first emission.  That is because it is disconnected right before
+the second one.
+
+Handlers can also be connected with arguments.  Again, these arguments
+don’t mean anything special to the signal itself, they will just be
+passed to the handler on each signal emission.  In case emission
+itself has some arguments, the two sets are combined: first are
+connection-time arguments, then emission argumens.
+
+Here is a simple illustration::
+
+    from notify.all import *
+
+    def sum (a, b):
+        print '%d + %d = %d' % (a, b, a + b)
+
+    signal = Signal ()
+
+    signal.connect (sum, 5)
+    signal (10)
+
+This simple program gives::
+
+    5 + 10 = 15
+
+Handlers with arguments can be disconnected as well.  You just need to
+pass the same (more exactly *equal*, in Python sense) arguments to
+``disconnect()`` method.  For instance, in the example above the only
+handler can be disconnected with ``disconnect (sum, 5)`` code.
+
+Another important concept is *blocking* handlers.  Blocked handlers
+remain in the list of connected handlers, but are skipped when
+emission happens.  Of course, to make blocking useful, handlers can be
+later unblocked.  A handler can be blocked several times, but then it
+needs to be unblocked exactly the same number of times to become
+active again.
+
+Blocking is less common than connecting/disconnecting handlers, but
+can be used e.g. to prevent reentrance.  For this, the handler would
+just block itself, emit signal once more, and then unblock.  Blocking
+also preserves order of connected handlers.  I.e., after
+blocking/unblocking a handler you’ll get it in the same position in
+the handler list, whereas after disconnecting/reconnecting you will
+find it at the very end of the list.
+
+
+
+.. TODO: More About Emissions
+
+
+
+Accumulators
+~~~~~~~~~~~~
+
+Typical signal emission discards handler return values completely.
+This is most often what you need: just inform the world about
+something.  However, sometimes you need a way to get feedback.  For
+instance, you may want to ask: “is this value acceptable, eh?”
+
+This is what accumulators are for.  Accumulators are specified to
+signals at construction time.  They can combine, alter or discard
+handler return values, post-process them or even stop emission.  There
+are some predefined accumulators as members of ``AbstractSignal``
+class, but you can easily define your own if needed.
+
+Let’s consider our example with the question outlined above.  We will
+consider value acceptable if *all* connected handlers like it.  If it
+is deemed unacceptable by at least one handler, we will consider it
+unacceptable overall.  Here is the code::
+
+    from notify.all import *
+
+    def only_even (number):
+        return number % 2 == 0
+
+    def only_positive (number):
+        return number > 0
+
+    def not_some (number):
+        return number not in (-2, 5, 6, 7, 8, 15)
+
+    is_fine = Signal (AbstractSignal.ALL_ACCEPT)
+    is_fine.connect (only_even)
+    is_fine.connect (only_positive)
+    is_fine.connect (not_some)
+
+    print '%d is fine: %s' % (-10, is_fine (-10))
+    print '%d is fine: %s' % (  4, is_fine (  4))
+    print '%d is fine: %s' % (  7, is_fine (  7))
+    print '%d is fine: %s' % (  8, is_fine (  8))
+    print '%d is fine: %s' % ( 20, is_fine ( 20))
+
+Here is the result::
+
+    -10 is fine: False
+    4 is fine: True
+    7 is fine: False
+    8 is fine: False
+    20 is fine: True
+
+−10 is liked by the first handler, but is rejected by the second one.
+7 is discarded at the start, while 8 makes it to the last handler.
+Numbers 4 and 20 are considered acceptable by all handlers and so they
+are deemed fine overall.
+
+This example is of course trivial to rewrite without signals.  But
+consider that handler set has changed.  Removing line
+``is_fine.connect (only_positive)`` changes the result::
+
+    -10 is fine: True
+    4 is fine: True
+    7 is fine: False
+    8 is fine: False
+    20 is fine: True
+
+Now −10 becomes fine too, since the other two handlers accept it.  As
+before, main idea of signals plays its role: emitter doesn’t need to
+know about way of handling.  Here, without changing emission part in
+any way, we have changed the result the program gives.  This is
+especially useful in case set of handlers is determined by some sort
+of input, e.g. in a GUI or from a configuration file.
+
+Other predefined accumulators are:
+
+``ANY_ACCEPTS``
+    Makes emission statement return true value if any of the handlers
+    returns true.  In a sense, this is a reverse of ``ALL_ACCEPT``.
+
+``LAST_VALUE``
+    Emission statement returns the last handler’s return value.  Not
+    useful in most cases, but can be handy in a few specific ones.
+
+``VALUE_LIST``
+    Emission statement returns a list of all handlers’ return values.
+    This could make a sane default, but was dropped for performance
+    reasons.
+
+.. TODO: Describe custom accumulator creation somewhere later.
+
+
+
+Conditions and Variables
+************************
+
+Conditions and variables are pretty similar, so let’s have a look at
+both of them at once.  (In fact they even share a common
+``AbstractValueObject`` base.)  Both concepts are very similar to
+specific signal instances that are emitted *only* when the associated
+boolean state (or value) changes, though they are not signals, only
+based on them.
+
+Here is a simple example featuring variables::
+
+    from notify.all import *
+
+    def welcome (user):
+        print 'Hello there, %s' % user
+
+    name = Variable ()
+    name.changed.connect (welcome)
+
+    import sys
+
+    while True:
+        sys.stdout.write ('What is your name? ')
+        line = sys.stdin.readline ()
+        if not line:
+            break
+        name.value = line.strip ()
+
+This simple program will read user names from stdin and welcome them.
+If you play with it, you can notice that entering the same name twice
+in a row will not cause the welcoming message being printed twice.
+So, despite two assignments to ``name.value``, the ‘changed’ signal is
+emitted the first time only in this case, since the second value is
+equal to the first.
+
+
+
+‘Storing’ State or Value
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+A common idiom is to ‘store’ condition state or variable value using a
+handler.  Statement ``x.store (handler)`` is completely identical to
+
+::
+
+    handler (x.get ())
+    x.changed.connect (handler)
+
+It is sometimes needed to call the handler with some initial state or
+value.  ``store()`` provides a standard way to call a function or
+method with current state/value and arange to have it called again
+when state/value changes.
+
+As with normal handler connection, you can pass additional arguments
+to ``store()`` which will be forwarded to the handler.  If you need to
+abort storing, just disconnect the handler.
+
+
+
+Compound Conditions
+~~~~~~~~~~~~~~~~~~~
+
+What makes conditions really powerful is the simple way to combine
+them in logical expressions.  Such expressions are conditions again
+and thus have the ‘changed’ signal, can be combined in turn and so on.
+Conditions also provide uniform support for combination, meaning that
+all condition types, including derived ones, support combination out
+of the box.
+
+::
+
+    from notify.all import *
+
+    have_foo = Condition (False)
+    have_bar = Condition (False)
+    compound = have_foo & ~have_bar
+
+    def print_states ():
+        print ('have foo and not have bar: %s (%s and not %s)'
+               % (compound.state, have_foo.state, have_bar.state))
+
+    def on_compound_state_changed (new_state):
+        print 'compound condition state changed to %s' % new_state
+
+    compound.changed.connect (on_compound_state_changed)
+
+    have_foo.state = False
+    have_bar.state = False
+    print_states ()
+
+    have_foo.state = True
+    have_bar.state = False
+    print_states ()
+
+    have_foo.state = False
+    have_bar.state = True
+    print_states ()
+
+    have_foo.state = True
+    have_bar.state = True
+    print_states ()
+
+To make a compound conditions, use bit operators (``~``, ``&``, ``|``
+and ``^``) instead of logic operators, ``not``, ``and``, ``or`` and
+``xor`` correspondingly (last is missing from Python).
+
+The example gives the following result::
+
+    have foo and not have bar: False (False and not False)
+    compound condition state changed to True
+    have foo and not have bar: True (True and not False)
+    compound condition state changed to False
+    have foo and not have bar: False (False and not True)
+    have foo and not have bar: False (True and not True)
+
+Note that the ‘changed’ signal on compound condition is emitted only
+twice, despite the many changes in states of its *term* conditions.
+As for any other condition (or variable), the signal is only emitted
+when the state has indeed changed, not just when it might have
+changed.
+
+Compound conditions are not mutable, i.e. you cannot arbitrarily set
+their state.  Instead, the state is computed from that of term
+conditions.
+
+
+
+Predicates Over Variables
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Variables cannot be combined (see the previous sections), but support
+building *predicate conditions*.  Such a condition is true or false
+based on variable’s value and automatically recomputes its state when
+that value changes.
+
+The method is called ``predicate()``, as one would expect::
+
+    from notify.all import *
+
+    def print_state (is_over_5):
+        print ('have more than 5 frobnicators: %s (%d)'
+               % (is_over_5, num_frobnicators.value))
+
+    num_frobnicators = Variable (0)
+    num_frobnicators.predicate (lambda n: n > 5).store (print_state)
+
+    for n in range (0, 10):
+        num_frobnicators.value = n
+
+This gives the following output::
+
+    have more than 5 frobnicators: False (0)
+    have more than 5 frobnicators: True (6)
+
+Following the common conduct of conditions and variables, predicate
+conditions only emit their ‘changed’ signal when their state changes,
+not each time state is recomputed.
+
+
+
+More Advanced Topics
+********************
+
+Topics here are ‘advanced’ only in the sense they are not as basic as
+the topics in the previous sections and you don’t need to know them in
+order to use Py-notify.  Still, they are not really complicated and
+reading them can be helpful.
+
+
+
+Context Managers
+~~~~~~~~~~~~~~~~
+
+Though Py-notify works with Python 2.3 or later, it does provide
+features only available in later versions.  Currently, they are
+limited to context mangers, available if your program is run under
+Python 2.5 or later only.
+
+Context managers are nothing but syntactic sugar, yet they allow to
+write more concise and easily understandable code.  Basic idea is that
+once some setup code is executed, it is guaranteed that associated
+cleanup code will be too, regardless of the code block exit method.
+Given that context managers are basically pairs of setup/cleanup,
+Py-notify provides them for all complementary method pairs, like
+``connect()``/``disconnect()``.
+
+Most useful of the context manager is ``blocking()``.  Here is how a
+function using it could look like (it assumes ``signal`` variable is
+declared somewhere in an enclosing scope)::
+
+    def signing_handler (text):
+        signal.stop_emission ()
+        with signal.blocking (signing_handler):
+            signal ('%s  -- Bob was here' % text)
+
+This context manager first blocks the handler, executes the code suite
+and finally unblocks the handler, even if an exception is risen.  In
+effect, this function ensures it never signs a piece of text more than
+once.
+
+In addition to ``blocking()``, signal objects also provide
+``connecting()`` and ``connecting_safely()`` context managers.  Their
+semantics should be obvious from the names.  Conditions and variables
+provide ``storing()``, ``storing_safely()``, ``synchronizing()`` and
+``synchronizing_safely()`` managers.
+
+Remember that in Python 2.5 ``with`` statement becomes available only
+if you do
+
+::
+
+    from __future__ import with_statement
+
+at the top of your module.
+
+
+
+Garbage-Collection Magic
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+Example in the `Predicates Over Variables`_ section may look
+somewhat strange to you: the predicate condition is created and one
+handler is connected to it, but it is not referenced from anywhere.
+Yet the example works.  In fact, conditions and variables do certain
+tricks ‘behind the scenes’ to ensure they are not garbage-collected
+while they are used.  For predicate conditions this means the variable
+is alive (in our case it is referenced, therefore it is alive) and at
+least one handler is connected (in our case it is ``print_state()``).
+
+In general, you can be sure that conditions and variables will not be
+deleted as long as they are used in some common sense.  And they
+*will* be deleted when they become unused, so there is no memory leak
+here.  Deletion may happen in a garbage collector run, so it will not
+necessarily be instant.
+
+
+
+Temporary Freezing Changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sometimes conditions and variables emitting ‘changed’ signal on each
+change is too much.  Maybe you are not interested in intermediate
+values, just in the final result.  Or maybe intermediate emissions are
+just ‘side effect’ and actually screw something, like object
+synchronization.  In this case it may be handy to temporarily *freeze*
+changes.
+
+While a condition or variable is in frozen state, it will not emit
+‘changed’ signal.  However, when first becoming frozen, it remembers
+its state or value and, if it changes by the time it is thawed,
+‘changed’ is emitted, but only once.  Thus, freezing is not a way to
+slip some changes in completely unnoticed.  Rather, it allows to have
+a set of consecutive changes to be viewed as a single change.
+
+Here is a short demonstration::
+
+    from notify.all import *
+
+    def note (value):
+        print value
+
+    variable = Variable (1)
+    variable.changed.connect (note)
+
+    def do_change ():
+        variable.value = 2
+        variable.value = 3
+
+    variable.with_changes_frozen (do_change)
+
+It will only print ‘3’, because assignment of 2 gets overriden by the
+time variable is thawed.
+
+The syntax above is not very nice, but I decided that providing
+freezing/thawing method pair would be too error-prone, since you would
+need to pass original value between them manually.  However, if your
+program runs with Python 2.5 or later, you can use a nicer context
+manager (see `Context Managers`_ section for details)::
+
+    with variable.changes_frozen ():
+        variable.value = 2
+        variable.value = 3
+
+
+
+Deriving New Types
+~~~~~~~~~~~~~~~~~~
+
+Conditions and variables are good, but sometimes you need just some
+more functionality than the standard classes provide.  For instance,
+you may want a variable which value can only be a string or ``None``.
+Standard ``Variable`` class will accept any value, so we need a custom
+class for this.  Luckily, there is ``is_allowed_value()`` method
+specifically for this purpose, which can be overriden in our new
+class::
+
+    import types
+    from notify.all import *
+
+    class StringVariable (Variable):
+        def is_allowed_value (self, value):
+            return isinstance (value, (types.NoneType, basestring))
+
+    variable = StringVariable ()
+    variable.value = 'a string'
+    variable.value = 100
+
+The first assignment will work just fine, but second will raise a
+``ValueError``, allowing you to catch programming errors quickly.
+
+Now suppose we decide that ``None`` isn’t an acceptable value by new
+rules.  Removing ``NoneType`` from the call to ``isinstance()``,
+however, will make zero-argument constructor raise an exception,
+because no arguments for ``Variable`` means ``None`` value.  So, one
+idea is to override ``__init__()`` in our ``StringVariable`` class to
+make ``value`` argument non-optional.  However, there is a different
+way::
+
+    StringVariable = Variable.derive_type ('StringVariable',
+                                           allowed_value_types = basestring)
+
+Constructor function of the new type will have a non-optional argument
+automatically, because ``None`` is not of ``basestring`` type.
+Whether to use ``derive_type()`` or not is up to you—as you have seen,
+standard derivation is possible as well.
+
+
+
+Using Changes Freeze for New Types
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Changes freezing methods always compare original and new value, even
+if the object never tried to emit ‘changed’ signal while freeze was in
+effect.  While this is somewhat less efficient than not comparing in
+such cases at all, it was judged helpful enough to live with somewhat
+non-optimal efficiency.  Besides, comparing identical (as with ``is``
+operator) values must be fast anyway.
+
+What is helpful about such behavior is best demonstrated with some
+code::
+
+    from notify.all import *
+
+    class BopContainer (object):
+        __NumBops = (AbstractVariable.derive_type
+                     ('__NumBops', object = 'container',
+                      getter = lambda container: len (container.__bops)))
+        def __init__(self):
+            self.__bops   = ()
+            self.num_bops = BopContainer.__NumBops (self)
+        def set_bops (self, *bops):
+            def do_set_bops ():
+                self.__bops = bops
+            self.num_bops.with_changes_frozen (do_set_bops)
+
+    def note (num_bops):
+        print num_bops
+
+    bops = BopContainer ()
+    bops.num_bops.changed.connect (note)
+
+    bops.set_bops ('foo', 'bar', 'baz')
+
+When run, this code prints number 3, the number of ‘bops’ set in the
+last line.  However, ``BopContainer`` never uses ``_value_changed()``,
+instead it relies on ``with_changes_frozen()`` to emit the signal
+itself.  So, the class doesn’t have to compare old and new values
+anymore, it uses this feature of the freezing method.
+
+With Python 2.5 you could rewrite ``set_bops()`` method in a nicer and
+more readable fashion::
+
+    def set_bops (self, *bops):
+        with self.num_bops.changes_frozen ():
+            self.__bops = bops
+
+
+
+Tutorial Copyright and Permissions Notice
+*****************************************
+
+Copyright © 2007, 2008 Paul Pogonyshev.
+
+Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+Permission is granted to copy and distribute modified versions of this
+document under the conditions for verbatim copying, provided that this
+copyright notice is included exactly as in the original, and that the
+entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+
+Permission is granted to copy and distribute translations of this
+document into another language, under the above conditions for
+modified versions.
+
+There is no guarantee that this document lives up to its intended
+purpose.  This is simply provided as a free resource.  As such, the
+authors and maintainers of the information provided within can not
+make any guarantee that the information is even accurate.
+
+
+
+.. _Observer programming pattern:
+   http://en.wikipedia.org/wiki/Observer_pattern
+
+.. _GTK+: http://gtk.org/
+
+.. _PyGTK: http://pygtk.org/
+
+.. _Boost: http://boost.org/
+
+.. _sigc++: http://libsigc.sourceforge.net/
+
+
+
+.. Local variables:
+.. coding: utf-8
+.. mode: rst
+.. indent-tabs-mode: nil
+.. End:

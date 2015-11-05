@@ -1,0 +1,245 @@
+--- New in Py-notify 0.3.1  (??? 2008) ------------------------------
+
+* All methods that accepted arbitrary argument numbers now also accept
+  arbitrary keyword arguments.
+
+* Updated to compile and work with Python 3.0rc1.
+
+* A few minor fixes for potential bugs and optimizations in
+  `notify.gc' module and in documentation.
+
+* 6 more unit test (164/186 in total).
+
+
+######################################################################
+
+
+--- New in Py-notify 0.2.1  (21 September 2008) ----------------------
+
+* Updated to compile and work with Python 3.0rc1.
+
+* A few minor fixes for potential bugs and optimizations in
+  `notify.gc' module and in documentation.
+
+
+### New in Py-notify 0.2.0  (6 May 2008) #############################
+
+* First stable version.  158/180 unit tests.  All pass with Python
+  2.3, 2.5, SVN trunk (heading to 2.6) and SVN py3k branch on Debian
+  GNU/Linux.
+
+* One more improvement in test framework.  Tiny improvement in
+  `run-tests.py' for Py3k.
+
+######################################################################
+
+
+--- New in Py-notify 0.1.15  (3 March 2008) --------------------------
+
+* Important bug-fix in `CleanSignal'.
+
+* `AbstractGCProtector.default' cannot be changed anymore if the
+  current default protector is used.  In practice, it can be changed
+  only on program startup.
+
+* Changed internals of `AbstractGCProtector.default' (in backward
+  compatible fashion) to avoid screwing class attribute cache in
+  upcoming Python 2.6 (see http://bugs.python.org/issue1878).
+
+* Documentation improvements.
+
+* 1 more unit test (158/180 in total).  Much improved test framework
+  catches more bugs for already written tests.
+
+
+--- New in Py-notify 0.1.14  (28 December 2007) ----------------------
+
+* Update to work with SVN Py3k again.
+
+* Fix build on MinGW at least in some cases (#10560).
+
+* A few documentation and infrastructure fixes and changes.
+
+
+--- New in Py-notify 0.1.13  (17 November 2007) ----------------------
+
+* Changed to work under SVN builds of Python 3000 too.  It still
+  requires only 2.3 or later.  Note that one testcase fails under
+  Py3k, but that is a Py3k bug: http://bugs.python.org/issue1393.
+  [P.S. Py3k was fixed later.]
+
+* A few minor bugfixes.
+
+* 2 new unit tests (157/179 in total).
+
+
+--- New in Py-notify 0.1.12  (25 August 2007) ------------------------
+
+* New method AbstractVariable.transform().
+
+* Some bugfixes and code improvements.
+
+* 8 new unit tests (155/177 in total).
+
+
+--- New in Py-notify 0.1.11  (22 July 2007) --------------------------
+
+* Major speed optimization in signal emission.  Now all benchmarks run
+  about 30% faster.
+
+* Many small improvements and fixes in derive_type() machinery.
+
+* Minor internal code improvements.
+
+* 18 more unit tests (147/169 in total).
+
+
+--- New in Py-notify 0.1.10  (1 July 2007) ---------------------------
+
+* Possibility to freeze changes in conditions and variabes.
+
+* For Python 2.5+ only: 8 context manager methods for signals,
+  conditions and variables.
+
+* Expanded tutorial.
+
+* Other small improvements and fixes.
+
+* 31 more unit tests (151 in total).  Now not all tests run under
+  Python 2.3 or 2.4; for them there are only 129 tests.
+
+
+--- New in Py-notify 0.1.9  (22 June 2007) ---------------------------
+
+* Fixed and improved `setup.py' script.
+
+* New RaisingGCProtector class.
+
+* 6 new unit tests (120 in total).
+
+
+--- New in Py-notify 0.1.8  (13 June 2007) ---------------------------
+
+* Improved and fixed derive_type() class method in several
+  AbstractValueObject-derived classes.
+
+* Mediators and bindings got __hash__() method.
+
+* Informative string representation added to bindings and
+  DummyReference class, improved in signals.
+
+* Other small improvements and fixes.
+
+* 8 new unit tests (114 in total) and several improved.
+
+
+--- New in Py-notify 0.1.7  (10 April 2007) --------------------------
+
+* Improved documentation.  Some documentation files that didn't
+  previously make it to source distribution now do.
+
+* Many minor improvements and fixes.
+
+* New `examples' subdirectory with one but non-trivial example.
+
+* 1 removed and 9 new unit tests (106 in total).
+
+* 1 new benchmark test (5 in total).
+
+
+--- New in Py-notify 0.1.6  (4 April 2007) ---------------------------
+
+* Adopted "Don't repeat yourself" principle, therefore most functions
+  that duplicate properties are renamed and made private.  This breaks
+  backward compatibility, but better now than never, since user base
+  is nonexistent.
+
+* Some bug-fixes and proper Pythonic __eq__, __ne__ and numeric
+  methods.
+
+* New DebugGCProtector class.
+
+* Improved or added documentation for many methods.
+
+* Infrastructure script improvements and fixes.
+
+* 6 more unit tests (98 in total).
+
+
+--- New in Py-notify 0.1.5  (3 March 2007) ---------------------------
+
+* Added a tutorial.
+
+* Improved or added documentation for many methods.
+
+* New functions to cancel effects of synchronize() for condiions and
+  variables.
+
+* Several more properties in different classes.  In general, use
+  properties instead of methods more.
+
+* Some bug-fixes.
+
+* 5 more unit tests (92 in total).
+
+
+--- New in Py-notify 0.1.4  (16 February 2007) -----------------------
+
+* New fast and generic GC-protector module (notify.gc) replaces
+  inefficient mark_object_as_used() and mark_object_as_unused()
+  functions.
+
+* Speed optimizations in bindings.
+
+* 2 more unit tests (87 in total).
+
+* 2 more benchmark tests (4 in total).
+
+
+--- New in Py-notify 0.1.3  (3 February 2007) ------------------------
+
+* New class `WatcherVariable', just like `WatcherCondition'.
+
+* Many bug-fixes in `Signal' class and in standard signal value
+  accumulators.
+
+* Speed optimizations in bindings and signals.
+
+* 18 more unit tests (85 in total).
+
+
+
+--- New in Py-notify 0.1.2  (28 January 2007) ------------------------
+
+* Bug-fixes in `WatcherCondition' and `AbstractSignal' classes.
+
+* Plugged memory leak in `AbstractValueObject' signal creation.
+
+* 8 more unit tests (67 in total).
+
+* Benchmarking support (with single comparison to PyGObject at
+  present).
+
+
+
+--- New in Py-notify 0.1.1  (23 January 2007) ------------------------
+
+* First released version.
+
+* Support for signals, conditions, variables, logical composition of
+  conditions, predicate conditions and other features.
+
+* 59 unit tests.
+
+
+
+  Copyright (C) 2007, 2008 Paul Pogonyshev.
+
+  Copying and distribution of this file, with or without modification,
+  are permitted provided the copyright notice and this notice are preserved.
+
+
+
+Local Variables:
+coding: utf-8
+End:
